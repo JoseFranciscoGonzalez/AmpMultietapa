@@ -1,0 +1,325 @@
+\documentclass[a4paper]{article}
+
+\usepackage{fullpage} 
+\usepackage{parskip} 
+\usepackage{amsmath}
+\usepackage[overload]{empheq}
+\usepackage{anysize}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{hyperref}
+\usepackage[spanish]{babel}  
+\usepackage[utf8x]{inputenc}   
+\usepackage[margin=2cm]{geometry}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage[oldvoltagedirection]{circuitikz}
+  \usetikzlibrary{arrows}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{adjustbox}
+\usepackage[bottom]{footmisc}
+\usepackage{makecell}
+    \setcellgapes{5pt}
+
+\usepackage[labelfont=bf]{caption}
+
+
+\definecolor{highlight}{HTML}{e76f51}
+\definecolor{fade}{HTML}{84a59d}
+\definecolor{OrYe}{HTML}{e9c46a}
+\definecolor{PersianGreen}{HTML}{2a9d8f}
+\definecolor{background}{HTML}{faf9f9}
+
+
+\newcommand*{\highlight}{\textcolor{highlight}}
+\newcommand*{\fade}{\textcolor{fade}}
+\newcommand*{\tblue}{\textcolor{fade}}
+\newcommand*{\torange}{\textcolor{BurntOrange}}
+\begin{document}
+
+\setcounter{page}{1}
+
+\thispagestyle{empty}
+
+\begin{center}
+\LARGE{\bfseries Informe N\textsuperscript{o}3 - Inspección de multietapa y estudio de resupuesta en frecuencia}\\
+\vspace{0.1cm}
+\large{\bfseries Circuitos Electrónicos - FIUBA}\\
+\end{center}
+
+\vspace{0.1cm}
+
+\begin{center}
+\large{José F. González - 100063 - \url{jfgonzalez@fi.uba.ar}}\\
+\end{center}
+
+\begin{center}
+\large{Atento a: Ing. Zola, Ing. Schiffmacher, Ing. Kelly} \hfill \large{Revisión 1.0}\\
+\end{center}
+
+\section{Introducción}
+Nos interesa estudiar la respuesta en frecuencia el circuito de la Figura \ref{fig:completo}, compuesto por un JFET de Canal P con $I_{DSS}=-16mA/V$ y $V_P=3V$ en configuración seguidor por source para la señal y un TBJ NPN con $\beta=200$ en configuración base común para la señal. La resistencia de entrada $R_{GS}$ será un preset regulable a un valor a determinar tal que permita acoplar la carga con $V_O= 0V$.
+
+
+\begin{figure}[h]
+      \centering     
+      \begin{circuitikz}[scale=0.8]
+      \ctikzset{tripoles/mos style/arrows};
+      \draw (0,0) node [ground] {} to[american voltage source, v=\Large{\highlight{$v_s$}}] ++(0,2) to[R=$10k$] node[left] {\Large{\highlight{$v_i$}}} ++(0,2) to[C=$0.1u$, -*] ++(3,0) node (in) {} to[short] ++(3,0) node[pjfet, anchor=G] (T1) {}; \draw (T1) ++(0.5,0) node {$T_1$};
+      \draw (T1.S) to[R, label=$15k$] ++(0,4);
+      \draw (in) ++(0.5,0) node[above] {$G1$};
+      \draw (in) to[R,l_=$600k$] ++(0,-4) node[ground] {};
+      \draw (in) ++(2,0) to[short,*-] ++(0,-1.5) to[R,l_=$R_{G2}$] ++(0,-4.5) ++(-0.5,0) to[short] ++(5,0) node[below] {$-20\ V$} to[short] ++(4.25,0);
+      \draw (T1.D) to[short, i=\highlight{$i_{D1}$}] ++(0,-1) node (E) {} to[short] ++(0,-3.7);
+      \draw (T1.S) to [short,*-] ++(0.5,0)  to[short, i<^=\highlight{$i_{C2}$}] ++ (4.5,0) node[npn,rotate=-90, xscale=-1, anchor=E] (T2) {};
+      \draw (T2.B) to[short,i<^=\highlight{$i_{B2}$}] ++(0,-2) to[R,l_=$4k7$] ++(0,-3.58); 
+      \draw (T2.B) ++(0,-2) to[short,*-*] ++(-2,0) node(B1){} to[C,l_=$2u$] ++(0,-1.5) node[ground] {};
+      \draw (T2.B) ++(-2,-2) to[short] ++(0,3) to[R=$13k$] ++(0,4.05);
+      \draw (T2.B) ++(0,-2) node[right] {$B2$}; 
+      \draw (T2) ++(0,0.5) node {$T_2$};
+      \draw (T2.C) to[short] ++(2,0) node(out) {} to[R=$10k$,*-] ++(0,4) ++(0.5,0) to[short] ++(-5,0) node[above] {$+20 V$} to[short] ++(-5,0); 
+      \draw (out) to[short] ++(3,0)  node[above] {\highlight{$V_O = 0$}}  to[R,l_=$20k$] ++(0,-4.5) node[ground ] {};
+      \draw (out) node[below] {$C2$};
+
+      \draw (T2.B) ++ (0,1.8) node[above] {$\beta = 200$};
+    \end{circuitikz}
+    \caption{Circuito completo con definiciones de corrientes positivas y tensiones referidas a común. \textbf{T1: } Transistor JFET de Canal P con $I_{DSS}=-16mA/V$ y $V_P=3V$ en configuración seguidor por source para la señal. \textbf{T2: } Transistor TBJ NPN con $\beta=200$ en configuración base común para la señal.}
+    \label{fig:completo}
+    \end{figure}
+
+\section{Polarización}
+
+En la Figura \ref{fig:polarizacion} se muestra el circuito equivalente de continua. La resolución se obtiene por las corrientes que impone la condición de tensión de acople \highlight{$V_O=0\ V$} sobre $T2$, asumiendo a esté en modo de control con $V_{BEon} = 0.7\ V$ y despreciando los efectos de carga de $I_{B2}$ sobre el divisor resistivo que polariza a $T2$. En $T1$ circulan $4mA$ que determinan una tensión de control $V_{GS}=1.5\ V$, el preset se debe ajustar a $R_{GS2}=810\ k\Omega$ para obtener este valor.
+
+
+\begin{figure}[H]
+      \centering     
+      \begin{circuitikz}[scale=0.8]
+      \ctikzset{tripoles/mos style/arrows};
+      \draw ++(5,2) node (in) {} to[short] ++(3,0) node[pjfet, anchor=G] (T1) {}; \draw (T1) ++(0.5,0) node {$T_1$};
+      \draw (T1.S) to[R, label=$15k$, i<_=\highlight{$2mA$}] ++(0,4);
+      \draw (in) ++(0.5,0) node[above] {$G1$};
+      \draw (in) to[R,l_=$600k$, i<_=\highlight{$14uA$}] ++(0,-4) node[ground] {};
+      \draw (in) ++(2,0) to[short,*-] ++(0,-1.5) to[R,l_=$R_{G2}$, i=\highlight{$14uA$}] ++(0,-4.5) ++(-0.5,0) to[short] ++(5,0) node[below] {$-20\ V$} to[short] ++(4.25,0);
+      \draw (in) ++(1.2,-3) node {\highlight{$810k$}};
+      \draw (T1.D) to[short, i=\highlight{$I_{D1}=4mA$}] ++(0,-1) node (E) {} to[short] ++(0,-3.7);
+      \draw (T1.S) to [short,*-] ++(0.5,0)  to[short, i<^=\highlight{$I_{C2}=2mA$}] ++ (4.5,0) node[npn,rotate=-90, xscale=-1, anchor=E] (T2) {};
+      \draw (T2.B) to[short,i<^=\highlight{$I_{B2}=10uA$}] ++(0,-2) to[R,l_=$4k7$] ++(0,-3.58); 
+      \draw (T2.B) ++(0,-2) to[short,*-] ++(-2,0) node(B1){};
+      \draw (T2.B) ++(-2,-2) to[short] ++(0,3) to[R=$13k$] ++(0,4.05);
+      \draw (T2.B) ++(0,-2) node[right] {$B2$}; 
+      \draw (T2) ++(0,0.5) node {$T_2$};
+      \draw (T2.C) to[short] ++(2,0) node(out) {} to[R=$10k$,*-,i<_=\highlight{$2mA$}] ++(0,4) ++(0.5,0) to[short] ++(-5,0) node[above] {$+20 V$} to[short] ++(-5,0); 
+      \draw (out) to[short] ++(3,0)  node[above] {\highlight{$V_O = 0$}}  to[R,l_=$20k$,i=\highlight{$0A$}] ++(0,-4.5) node[ground ] {};
+      \draw (out) node[below] {$C2$};
+      \draw (T2.B) ++(-1,-2) node[above] {\highlight{$-9.4\ V$}};
+      \draw (T2.E) ++(-2.5,0) node[below] {\highlight{$-10.1\ V$}};
+      \draw (T2.B) ++ (0,1.8) node[above] {$\beta = 200$};
+      \draw (in) ++(2,0) node[above] {\highlight{$-8.6\ V$}};
+    \end{circuitikz}
+    \caption{Circuito de polarización con tensiones referidas a común y aproximaciones del $10\%$. \textbf{T1:} Saturado con $I_{D}=4mA$ y $V_{DS}=30\ V$, parámetros de señal \highlight{$g_{m1}=5.3mA/V$} y \highlight{$r_{ds},r_{gs} \rightarrow \infty$}. \textbf{T2:} En modo activo con $I_C=2mA$ y $V_{CE}=10\ V$, parámetros de señal \highlight{$g_{m2}(27^oC)=77mA/V$} y \highlight{$r_\pi = 2.6\ k\Omega$}.}
+    \label{fig:polarizacion}
+    \end{figure}
+
+
+    \section{Circuito de señal a frencuencias medias}
+    En la Figura \ref{fig:senal} se muestra el circuito de señal a frecuencias medias con las resistecias de carga de cada etapa. La ganancia del amplificador a frecuencias medias es el producto de la ganancia de etapas \highlight{$A_v = 0.06 \times 516 = 31$}. No se incluyeron efectos de segundo orden ni resistencia del cuerpo de la base.
+
+
+\begin{figure}[h]
+	\caption{Circuito de señal a frecuencias medias. \textbf{T1: } En seguidor por source con ganancia \highlight{$A_{v2} = 0.06$}. \textbf{T2: } En configuración base común sin resistencia de cuerpo de la base con ganancia \highlight{$A_{v2} = 516$}.}
+    \label{fig:senal}
+      \centering     
+      \begin{circuitikz}[scale=0.8]
+      \ctikzset{tripoles/mos style/arrows};
+      \draw (0,0) to[american voltage source, v=\Large{\highlight{$v_s$}}] ++(0,2) to[R=$10k$] node[left] {\highlight{$v_i$}} ++(0,2) to[short, -*] ++(3,0) node (in) {} to[short] ++(3,0) node[pjfet, anchor=G] (T1) {}; \draw (T1) ++(0.5,0) node {$T_1$};
+      \draw (T1.S) ++(3,0) to[R, label=$15k$, *-] ++(0,-4.62) ;
+      \draw (in) ++(0.5,0) node[above] {$G1$};
+      \draw (in) to[R,l_=$600k$] ++(0,-4) ;
+      \draw (in) ++(2,0) to[short,*-] ++(0,0) to[R,l_=$810k$] ++(0,-4) ;
+      \draw (T1.D) to[short, i=\highlight{$i_{d1}$}] ++(0,-1) node (E) {} to[short] ++(0,-1.8) node[ground] {} ;
+      \draw (T1.S) to [short] ++(0.5,0)  to[short] ++ (4.5,0) node[npn,rotate=-90, xscale=-1, anchor=E] (T2) {};
+      \draw (T2.B) to[short,i<^=\highlight{$i_{b2}$}] ++(0,-3.56) ;
+      \draw (T2.B) ++(0,-1) node[right] {$B2$}; 
+      \draw (T2) ++(0,0.5) node {$T_2$};
+      \draw (T2.C) to[short, i<^=\highlight{$i_{c2}$}] ++(2,0) node(out) {} to[R=$10k$,*-] ++(0,-4.62) ;
+      \draw (out) to[short] ++(3,0)  node[above] {\highlight{$v_o$}}  to[R,l_=$20k$] ++(0,-4.62) ;
+      \draw (out) node[above] {$C2$};
+      \draw (-0.5,0) to[short] ++(20.25,0);
+
+      \draw (T2.B) ++ (0,1.8) node[above] {$\beta = 200$};
+      \draw (T2.B) ++(0,3) node {\highlight{$A_{v2} = g_{m2}\times R_{ca} = 516$}};
+      \draw (T1.D) ++(0,3) node {\highlight{$A_{v2} = \frac{R_{da}}{1/g_{m1} + R_{da}} = 0.06$}};
+      \draw[highlight,-latex, thick] (out) ++(-1,-5.5) node[left] {\highlight{$6.7k$}} -- ++(0,1.5) -- ++(0.5,0);
+      \draw[highlight,-latex, thick] (out) ++(4,-5.5) node[left] {\highlight{$6.7k$}} -- ++(0,1.5) -- ++(-0.5,0);
+      \draw[highlight,-latex, thick] (T2.E) ++(-1,-5.5) node[left] {\highlight{$\frac{1}{g_{m2}} = 13\Omega$}} -- ++(0,1.5) -- ++(0.5,0);
+      \draw[highlight,-latex, thick] (in) ++(-1,-4.75) node[left] {\highlight{$345k$}} -- ++(0,1.5) -- ++(0.5,0);
+
+    \end{circuitikz}
+    
+    \end{figure}
+
+    \section{Frecuencia de corte inferior}
+
+    Bajo las hipótesis de método de constantes de tiempo nos interesa estimar la frecuencia de corte inferior para el circuito equivalente a bajas frecuencias de la Figura \ref{fig:bajas}. 
+
+    La frecuencia ficticia asociada al nodo $G1$ será
+
+    \begin{equation}
+    f = \frac{1}{2\pi RC} = \frac{1}{2\pi \times 355k\Omega\times 0.1uF} = 4.5\ Hz
+    \end{equation} 
+
+    mientras que la asociada al nodo $B2$ es superior y determina la frecuencia de corte inferior 
+
+    \begin{equation}
+    f_L = \frac{1}{2\pi RC} = \frac{1}{2\pi\times 3.2k\Omega\times 2uF} = 25\ Hz
+    \end{equation}
+
+
+\begin{figure}[t]
+      \centering     
+      \begin{circuitikz}[scale=0.8]
+      \ctikzset{tripoles/mos style/arrows};
+      \draw (0,0) to[american voltage source, v=\Large{\highlight{$v_s$}}] ++(0,2) to[R=$10k$] node[left] {\highlight{$v_i$}} ++(0,2) to[C=\highlight{$0.1\mu$}, -*] ++(3,0) node (in) {} to[short] ++(3,0) node[pjfet, anchor=G] (T1) {}; \draw (T1) ++(0.5,0) node {$T_1$};
+      \draw (T1.S) ++(3,0) to[R, label=$15k$, *-] ++(0,-4.62) ;
+      \draw (in) ++(0.5,0) node[above] {$G1$};
+      \draw (in) to[R,l_=$600k$] ++(0,-4) ;
+      \draw (in) ++(2,0) to[short,*-] ++(0,0) to[R,l_=$810k$] ++(0,-4) ;
+      \draw (T1.D) to[short, i=\highlight{$i_{d1}$}] ++(0,-1) node (E) {} to[short] ++(0,-1.8) node[ground] {} ;
+      \draw (T1.S) to [short] ++(0.5,0)  to[short] ++ (4.5,0) node[npn,rotate=-90, xscale=-1, anchor=E] (T2) {};
+      \draw (T2.B) to[R=$3.5k$] ++(0,-3.56) ;
+      \draw (T2.B) ++(0,-0.5) node[right] {$B2$} to[short,*-] ++(-1,0) to[C,l_=$2u$] ++(0,-3.1); 
+      \draw (T2) ++(0,0.5) node {$T_2$};
+      \draw (T2.C) to[short, i<^=\highlight{$i_{c2}$}] ++(2,0) node(out) {} to[R=$10k$,*-] ++(0,-4.62) ;
+      \draw (out) to[short] ++(3,0)  node[above] {\highlight{$v_o$}}  to[R,l_=$20k$] ++(0,-4.62) ;
+      \draw (out) node[above] {$C2$};
+      \draw (-0.5,0) to[short] ++(20.25,0);
+
+
+      \draw[highlight,-latex, thick] (T2.B) ++(-1.25,-0.25) node[above] {\small{\highlight{$\beta R_E = 40k$}}} -- ++(1.5,0) -- ++(0,0.5);
+      \draw (T2.B) ++ (0,1.8) node[above] {$\beta = 200$};
+      \draw (T2.B) ++(0,3) node {\highlight{$A_{v2} = g_{m2}\times R_{ca} = 516$}};
+      \draw (T1.D) ++(0,3) node {\highlight{$A_{v2} = \frac{R_{da}}{1/g_{m1} + R_{da}} = 0.06$}};
+      \draw[highlight,-latex, thick] (out) ++(-1,-5.5) node[left] {\highlight{$6.7k$}} -- ++(0,1.5) -- ++(0.5,0);
+      \draw[highlight,-latex, thick] (out) ++(4,-5.5) node[left] {\highlight{$6.7k$}} -- ++(0,1.5) -- ++(-0.5,0);
+      \draw[highlight,-latex, thick] (T2.E) ++(-1,-5.5) node[left] {\highlight{$\frac{1}{g_{m2}} = 13\Omega$}} -- ++(0,1.5) -- ++(0.5,0);
+      \draw[highlight,-latex, thick] (in) ++(-1,-4.75) node[left] {\highlight{$345k$}} -- ++(0,1.5) -- ++(0.5,0);
+
+    \end{circuitikz}
+    
+	\caption{Circuito de señal a bajas frecuencias. \textbf{Nodo G1:} Capacidad 20 veces inferior al nodo $B2$, resistencia equivalente 100 veces mayor. \textbf{Nodo B2:} Nodo dominante a bajas frecuencias.}
+    \label{fig:bajas}
+    \end{figure}
+
+    \section{Frecuencia de corte superior}
+    En la Figura \ref{fig:altas} se muestra el circuito equivalente a altas frecuencias luego de reflejar las impedancias internas por el Teorema de Miller. La resistencia de cuerpo de la base $r_x=100 \Omega$ ya no es despreciable. Los nodos dominantes son $G1$ y $B2$ con valores
+
+
+    \begin{align*}[left=\empheqlbrace]
+    C_{gs}^1 &= 4pF(1-A_{vGS}) = 4pF \times (1-0.06) = 3.8pF\\
+    C_{gd} &= 1pF\\
+    \tau &= RC = 4.8pF \times 9.7 k\Omega = 46ns \rightarrow f = 3.4\ MHz
+    \end{align*}
+
+
+    \begin{align*}[left=\empheqlbrace]
+    C_{\pi}^{2} &= 40pF\times (1-A_{vBE}) = 40pF(1-\frac{200}{200+\frac{1}{77m}}) = 2pF\\
+    C_{\mu}^{1} &= 1pF(1+A_{vBC}) = 517pF\\
+    \tau &= RC = 519pF\times 100 \Omega = 52ns \rightarrow f = 3.1\ MHz
+    \end{align*}
+
+    \newpage
+
+    Las frecuencias están a menos de una octava de distancia, luego se toma como frecuencia de corte
+
+    \begin{equation}
+    f_H = \frac{1}{2\pi\times (46ns + 52ns)} = 1.7\ MHz
+    \end{equation}
+
+
+
+\begin{figure}[t]
+	
+      \centering     
+      \begin{circuitikz}[scale=0.8, smallC/.style={C, bipoles/length=0.5cm}, smallR/.style={R, bipoles/length=0.5cm}]
+      \ctikzset{tripoles/mos style/arrows};
+      \draw (0,0) to[american voltage source, v=\Large{\highlight{$v_s$}}] ++(0,2) to[R=$10k$] node[left] {\highlight{$v_i$}} ++(0,2) to[short, -*] ++(3,0) node (in) {} to[short] ++(3,0) node[pjfet, anchor=G] (T1) {}; \draw (T1) ++(0.5,0) node {$T_1$};
+      \draw (T1.S) ++(3,0) to[R, label=$15k$, *-] ++(0,-4.62) ;
+      \draw (in) ++(0.5,0) node[above] {$G1$};
+      \draw (in) to[R,l_=$600k$] ++(0,-4) ;
+      \draw (in) ++(2,0) to[short,*-] ++(0,0) to[R,l_=$810k$] ++(0,-4) ;
+      \draw (T1.D) to[short, i=\highlight{$i_{d1}$}] ++(0,-1) node (E) {} to[short] ++(0,-1.8) node[ground] {} ;
+      \draw (T1.S) to [short] ++(0.5,0)  to[short] ++ (4.5,0) node[npn,rotate=-90, xscale=-1, anchor=E] (T2) {};
+      \draw (T2.B) to[smallR] node[right] {} ++(0,-3.6);
+      \draw (T2.B) ++(0,-1) node[right] {$B2$}; 
+      \draw (T2) ++(0,0.5) node {$T_2$};
+      \draw (T2.C) to[short, i<^=\highlight{$i_{c2}$}] ++(2,0) node(out) {} to[R=$10k$,*-] ++(0,-4.62) ;
+      \draw (out) to[short] ++(3,0)  node[above] {\highlight{$v_o$}}  to[R,l_=$20k$] ++(0,-4.62) ;
+      \draw (out) ++(2,0) node[above] {$C2$};
+      \draw (-0.5,0) to[short] ++(20.25,0);
+
+
+      \draw (in) to[smallC, l=$C_{gs}^{1}$] ++(0,1.5) to[short] ++(-3,0) node[ground] {};
+      \draw (in) ++(2,0) to[smallC, l=$C_{gd}$] ++(0,1.5) to[short,-*] ++(-2,0);
+
+
+      \draw (T2.E) ++(-3,0) to[smallC, l=$C_{gs}^{2}$] ++(0,1.5) to[short] ++(-3,0) node[ground] {};
+      \draw (T2.E) ++(-3,0) ++(2,0) to[smallC, l=$C_{\pi}^1$] ++(0,1.5) to[short,-*] ++(-2,0);
+
+      \draw (T2.B) to[short,*-] ++(-1.5,0) to[smallC,l=$C_{\pi}^{2}$] ++(0,-3) to[short,-*] ++(1.5,0);
+      \draw (T2.B) -- ++(+1.5,0) to[smallC,l=$C_{u}^{1}$] ++(0,-3) -- ++(-1.5,0);
+      \draw (T2.B) ++(0,-2) node[right]{$100 \Omega$};
+
+
+      \draw (out) to[smallC] ++(0,2) to[short] ++(1,0) node[ground] {};
+      \draw (out) ++(0,1) node[left] {$C_u^{2}$};
+
+
+      \draw (T2.B) ++ (0,1.8) node[above] {$\beta = 200$};
+      \draw[highlight,-latex, thick] (out) ++(-1,-5.5) node[left] {\highlight{$6.7k$}} -- ++(0,1.5) -- ++(0.5,0);
+      \draw[highlight,-latex, thick] (out) ++(4,-5.5) node[left] {\highlight{$6.7k$}} -- ++(0,1.5) -- ++(-0.5,0);
+      \draw[highlight,-latex, thick] (T2.E) ++(-1,-5.5) node[left] {\highlight{$\frac{1}{g_{m2}} = 13\Omega$}} -- ++(0,1.5) -- ++(0.5,0);
+      \draw[highlight,-latex, thick] (in) ++(-1,-4.75) node[left] {\highlight{$345k$}} -- ++(0,1.5) -- ++(0.5,0);
+
+    \end{circuitikz}
+    \caption{Circuito de señal a altas frecuencias con capacitores internos reflejados a común por el Teorema de Miller.}
+    \label{fig:altas}
+    \end{figure}
+
+
+    \section{Tiempo de crecimiento}
+
+    Estudiamos el tiempo en que la señal de salida tarda en ir del 10\% al 90\% de su valor final para un tren de pulsos de frecuencias cercanas a la $f_L$ y cercanas a $f_H$ del circuito.
+
+    \subsection{A bajas frecuencias}
+
+    A bajas frecuencias el circuito se comporta como un pasa altos la señal en la zona plana de la salida se verá con un tiempo de crecimiento de
+
+    \begin{equation}
+    \tau_r = \tau_{90\%} - \tau_{10\%} = 2.3\tau_L - 0.1 \tau_L = 2.2 \tau_L = 2.2 \times 6.4ms= 14 ms
+    \end{equation}
+
+    el porcentaje de declinación asociado, para un pulso de duración $\delta < 5\tau_L$, por ejemplo $\delta = 10ms$, será 
+
+    \begin{equation}
+    P = (1-e^{-t/\tau_L}) = (1-e^{-10ms/6.4ms}) = 0.8\ (80\%)
+    \end{equation}
+
+    \subsection{A altas frecuencias}
+
+
+    A altas frecuencias el circuito se comporta como un pasa bajas la señal en los flancos de la salida se verá con un tiempo de crecimiento de
+
+    \begin{equation}
+    \tau_r = \tau_{90\%} - \tau_{10\%} = 2.3\tau_H - 0.1 \tau_H = 2.2 \tau_H = 2.2 \times 98ns= 216 ns
+    \end{equation}
+
+
+
+
+
+
+
+
+
+\end{document}
